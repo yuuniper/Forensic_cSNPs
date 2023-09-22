@@ -2,6 +2,7 @@
 This is a pipeline to identify genomic variants from RNA-seq data. 
 
 Install all the required packages, softwares, and tools: 
+
 NOTE: You only need to do this once. Follow the steps below to install all the dependencies that you do not already have. 
 
 Picard:
