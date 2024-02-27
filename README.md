@@ -1,5 +1,5 @@
-# GenomicVariants
-This is a pipeline to identify genomic variants from RNA-seq data. 
+# Forensic_cSNPs 
+This is a pipeline to identify forensically-relevant cSNPs from RNA-seq data. 
 
 ## Install all the required packages, softwares, and tools: 
 
