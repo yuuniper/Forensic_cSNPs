@@ -1,5 +1,5 @@
 # Forensic_cSNPs 
-This is a pipeline to identify forensically-relevant cSNPs from RNA-seq data. 
+This is a bioinformatics pipeline to identify forensically-relevant cSNPs from RNA-seq data. To read more about this pipeline's methodology, please click here for thesis link: (Will be updated. by 5/10/24 once published by UCF STARS. 
 
 ## Install all the required packages, softwares, and tools: 
 
