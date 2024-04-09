@@ -21,5 +21,5 @@ This pipeline uses Java version 17 to be compatible with Picard 3.0.0: https://w
 
 
 ## Preprocessing 
-Contains preprocessing_part1.sh
+Contains preprocessing
 
