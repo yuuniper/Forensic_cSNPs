@@ -76,6 +76,7 @@ SAMPLE
 ```
 
 4. Single End or Paired End Processing 
+
 Enter 1: For Single End 
 ```
 1 
