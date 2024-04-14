@@ -75,11 +75,21 @@ SAMPLE
 /u/OUTPUT_DIRECTORY/
 ```
 
-For example, you can run the following command to submit as a job on the UCF Coombs cluster: 
+4. Single End or Paired End Processing 
+Enter 1: For Single End 
 ```
-srun preprocessing.sh /u/home/user/ SRRXXXXXX /u/home/user/output/
+1 
 ```
-This means I have a */u/home/user/SRRXXXXXX.fastq.gz I want to process/
+Enter 2: For Paired End
+```
+2
+```
+
+For example, you can run the following command to submit as a job on the University of Central Florida (UCF) Coombs cluster: 
+```
+srun preprocessing.sh /u/home/user/ SRRXXXXXX /u/home/user/output/ 1
+```
+This means I have a single end file */u/home/user/SRRXXXXXX.fastq.gz I want to process.
 I want to output my processed files into the directory */u/home/user/output/*.
 
 
