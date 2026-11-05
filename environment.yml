@@ -1,0 +1,21 @@
+# Conda environment for the Forensic_cSNPs pipeline.
+# Versions below are the ones named in the original README/script.
+# Tools marked "not recorded" were used but their versions were never written
+# down in this repo; pin them to what you ran before reporting results.
+name: forensic-csnps
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - openjdk=17
+  - picard=3.0.0
+  - sra-tools=3.0.7
+  - hisat2        # version not recorded
+  - samtools      # version not recorded
+  - bcftools      # version not recorded
+  - fastp         # version not recorded
+  - python=3.10
+# GATK: preprocessing.sh calls GATK 4.0.2.1 (MarkDuplicatesSpark, SelectVariants,
+# VariantFiltration) and GATK 4.3.0.0 (Mutect2). They are separate installs
+# (Java 8 per the script), so they are not part of this environment. See README.
