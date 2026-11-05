@@ -1,96 +1,86 @@
-# Forensic_cSNPs 
+# Forensic_cSNPs
 
-## Introduction 
+An RNA-seq pipeline for detecting forensically relevant coding-region SNPs (cSNPs) in body-fluid-specific mRNA transcripts.
 
-This bioinformatics pipeline is designed to detect forensically relevant coding region single nucleotide polymorphisms (cSNPs) from RNA-seq data.
+## Research question
 
-The cSNPs in this pipeline are a set 35 cSNPs sourced from [Dorum et. al](10.1016/j.fsigen.2022.102685) in body fluid-specific mRNA transcripts that represent a direct link between body fluids and their donors. 
+mRNA profiling is used in forensics to identify which body fluid (blood, saliva, semen, etc.) a stain came from. Can the same RNA-seq reads also be used to genotype coding SNPs inside those transcripts, linking the body fluid to its donor without a separate DNA assay?
 
-The pipeline is adaptable for use on compute clusters with job submission engines like SLURM, as well as on standalone machines.
+The pipeline targets a panel of 35 cSNPs in body-fluid-specific transcripts, taken from Dorum et al., *Forensic Sci Int Genet* 2022 ([doi:10.1016/j.fsigen.2022.102685](https://doi.org/10.1016/j.fsigen.2022.102685)).
 
-The pipeline offers seamless execution from start to finish, allowing users to initiate the analysis from raw FASTQ files and proceed through somatic variant calling with a single submission command.
+## Data
 
-The pipeline supports both single-end and paired-end data. 
+- **Input:** public bulk RNA-seq runs (single-end or paired-end FASTQ, e.g. SRA accessions such as `SRRXXXXXX`), downloaded with the SRA Toolkit.
+- **Reference:** human genome hg38 (NCBI GCF_000001405.26) with a HISAT2 GRCh38 index, and a gene annotation BED (`hg38.knownGeneAddGene_name.bed.gz`) used to annotate variants.
+- **Not in this repo:** no sequencing data, VCFs, or reference files are committed. Raw reads from human subjects can be identifiable or access-restricted, so obtain them from the original source under its terms of use. `.gitignore` blocks common data file types.
 
-To read more about this pipeline's methodology, please click here for undergraduate thesis link: (Will be updated by 5/10/24 once published by UCF STARS.)
+## Methods
 
+`preprocessing.sh` runs, per sample:
 
-## Install all the required packages, softwares, and tools: 
-> NOTE:
-> You only need to do this once. If you are working on a bioinformatics compute cluster, it may have most dependencies already preinstalled. 
-> Follow the steps below to install all the ones your cluster or machine does not already have.
+1. **Trim** reads with fastp.
+2. **Align** to hg38 with HISAT2 (`--dta`).
+3. **Convert** SAM to BAM with samtools; validate with Picard `ValidateSamFile`.
+4. **Mark duplicates** with GATK `MarkDuplicatesSpark`; add read groups with Picard.
+5. **Sort and index** with samtools.
+6. **Call variants** with GATK `Mutect2`.
+7. **Select SNPs** (`SelectVariants`) and **hard-filter** them (`VariantFiltration`: QD < 2, FS > 60, MQ < 40, SOR > 4, MQRankSum < -12.5, ReadPosRankSum < -8).
+8. **Annotate** with `bcftools annotate` against the gene annotation BED.
+9. **Extract cSNPs** with `find_cSNP.py` (see "Known gaps").
 
+Single-end and paired-end data are both supported, and the script can be run under SLURM (`srun`) or on a standalone machine.
 
-**Java 17**
+## Results
 
-This pipeline uses Java version 17 to be compatible with Picard 3.0.0: https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html
+This repo contains the pipeline code only. No result files or figures are included. Methods and results are described in the author's undergraduate thesis (University of Central Florida; link to be added once published on UCF STARS).
 
+## Reproducing
 
-**Human Genome**
+### Requirements
 
-Please have hg38 downloaded from the NCBI website: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.26/
+- Linux, Java 17 (Picard 3.0.0) and Java 8 (GATK 4.0.2.1 / 4.3.0.0 as invoked in the script)
+- hg38 FASTA plus HISAT2 GRCh38 index ([download](https://genome-idx.s3.amazonaws.com/hisat/grch38_genome.tar.gz))
+- GATK [4.0.2.1](https://github.com/broadinstitute/gatk/releases/tag/4.0.2.1) and 4.3.0.0
 
-**GATK**
+Most other tools can be installed with conda:
 
-The GATK version of this pipeline is gatk-4.0.2.1: https://github.com/broadinstitute/gatk/releases/tag/4.0.2.1
-
-
-**picard**
-
-Method 1: 
-1. Download *picard.jar* from this GitHub.
-2. Drag and drop *picard.jar* into your home directory.
-
-Method 2: 
-1. Download the 3.0.0 Version on Picard  here: https://github.com/broadinstitute/picard/releases/tag/3.0.0
-
-**HISAT2**
-1. Download the correct binary version of HISAT2 here: https://daehwankimlab.github.io/hisat2/download/
-
-2. Download the Index for GRCh38 here: 	https://genome-idx.s3.amazonaws.com/hisat/grch38_genome.tar.gz 
-
-
-**samtools**
-Plase download samtools from here: https://www.htslib.org/download/
-
-
-## How to use the preprocessing script 
-
-> NOTE:
-> Please make sure all the packages are downloaded before running the scripts!
-
-**Scripts use 3 arguments:**
-1. Directory of your input file (DO NOT INCLUDE FILENAME!)
-```
-/u/INPUT_DIRECTORY/
-```
-2. Name of the sample file (DO NOT INCLUDE DIRECTORY!)
-
-> For example, if the name is *SAMPLE_R1.fastq.gz* then your sample name is SAMPLE
-```
-SAMPLE
-```
-3. Directory of your output file (DO NOT INCLUDE FILENAME!)
-```
-/u/OUTPUT_DIRECTORY/
+```bash
+conda env create -f environment.yml
+conda activate forensic-csnps
 ```
 
-4. Single End or Paired End Processing 
+`picard.jar` is no longer committed; the environment provides Picard 3.0.0 (or download it from the [release page](https://github.com/broadinstitute/picard/releases/tag/3.0.0)).
 
-Enter 1: For Single End 
-```
-1 
-```
-Enter 2: For Paired End
-```
-2
+### Running
+
+```bash
+bash preprocessing.sh <input_dir>/ <sample_name> <output_dir>/ <1|2>
 ```
 
-For example, you can run the following command to submit as a job on the University of Central Florida (UCF) Coombs cluster: 
-```
-srun preprocessing.sh /u/home/user/ SRRXXXXXX /u/home/user/output/ 1
-```
-This means I have a single end file */u/home/user/SRRXXXXXX.fastq.gz I want to process.
-I want to output my processed files into the directory */u/home/user/output/*.
+| Argument | Meaning |
+|---|---|
+| `input_dir` | Directory containing the reference folder (`hg38/`) and `extractVariants/hdr.txt`. Keep the trailing `/`. |
+| `sample_name` | Sample ID without `_R1`/`_R2` or extension, e.g. `SRRXXXXXX`. |
+| `output_dir` | Where `<sample>_processing/` is created. Keep the trailing `/`. |
+| `1` or `2` | `1` = single-end, `2` = paired-end. |
 
+On SLURM: `srun bash preprocessing.sh /u/home/user/ SRRXXXXXX /u/home/user/output/ 1`
 
+## Known gaps (not changed in this cleanup)
+
+The cleanup did not alter pipeline logic, so these remain:
+
+- `find_cSNP.py` is called by the last step but is not in this repo.
+- `preprocessing.sh` has hard-coded cluster paths (`/home/al018041/utils/...`, `/share/apps/gatk-4.0.2.1`) and `module load` lines specific to the UCF cluster; the FASTQ location is hard-coded rather than taken from `input_dir`. Edit these for your system.
+- `extractVariants/hdr.txt` and the annotation BED are referenced but not included.
+- Tool versions for fastp, HISAT2, samtools and bcftools were not recorded.
+
+## Repository structure
+
+```
+.
+├── README.md
+├── preprocessing.sh   # end-to-end FASTQ -> annotated SNP VCF -> cSNP list
+├── environment.yml    # conda environment (partially pinned, see comments)
+└── .gitignore         # blocks data, BAM/VCF/FASTQ, jars, secrets
+```

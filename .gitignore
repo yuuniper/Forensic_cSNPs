@@ -1,0 +1,33 @@
+# Large binaries / tool distributions (install via environment.yml instead)
+*.jar
+sratoolkit*/
+gatk-*/
+
+# Sequencing data and pipeline outputs (may be restricted or identifiable)
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.sam
+*.bam
+*.bai
+*.cram
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*_processing/
+hg38/
+*.summary
+
+# Secrets / environment
+.env
+*.pem
+*.key
+
+# OS / editor / Python
+.DS_Store
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.vscode/
+.idea/
